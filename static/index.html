@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>王家一族</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f2f5;min-height:100vh}
+
+/* 頂部導覽 */
+#navbar{background:#1877f2;color:#fff;padding:0 16px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 4px rgba(0,0,0,.2)}
+#navbar h1{font-size:20px;font-weight:700;letter-spacing:1px}
+#nav-tabs{display:flex;gap:4px}
+.nav-tab{padding:8px 14px;border-radius:8px;cursor:pointer;font-size:14px;color:rgba(255,255,255,.8);transition:background .15s}
+.nav-tab:hover{background:rgba(255,255,255,.15);color:#fff}
+.nav-tab.active{background:rgba(255,255,255,.2);color:#fff;font-weight:600}
+
+/* 主體 */
+#main{max-width:680px;margin:20px auto;padding:0 12px;display:flex;flex-direction:column;gap:16px}
+
+/* 發文框 */
+#post-box{background:#fff;border-radius:10px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+#post-box h3{font-size:14px;color:#65676b;margin-bottom:12px}
+.post-form{display:flex;flex-direction:column;gap:10px}
+.post-form input,.post-form textarea,.post-form select{border:1px solid #ddd;border-radius:8px;padding:10px 12px;font-size:14px;font-family:inherit;outline:none;transition:border .15s}
+.post-form input:focus,.post-form textarea:focus,.post-form select:focus{border-color:#1877f2}
+.post-form textarea{resize:none;height:80px}
+.post-form select{background:#fff;color:#333}
+.submit-btn{background:#1877f2;color:#fff;border:none;border-radius:8px;padding:10px;font-size:15px;font-weight:600;cursor:pointer;transition:background .15s}
+.submit-btn:hover{background:#166fe5}
+
+/* 貼文 */
+.post-card{background:#fff;border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.1);overflow:hidden}
+.post-header{display:flex;align-items:center;gap:10px;padding:14px 16px 8px}
+.avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff;flex-shrink:0}
+.post-meta{flex:1}
+.post-name{font-weight:600;font-size:15px;color:#050505}
+.post-info{font-size:12px;color:#65676b;display:flex;gap:6px;align-items:center;margin-top:2px}
+.cat-badge{padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;color:#fff}
+.cat-出遊{background:#42b883}
+.cat-美食{background:#e86c2c}
+.cat-生活資訊{background:#1877f2}
+.post-content{padding:4px 16px 14px;font-size:15px;color:#050505;line-height:1.6;white-space:pre-wrap;word-break:break-word}
+.post-actions{border-top:1px solid #e4e6eb;padding:4px 8px;display:flex;gap:4px}
+.action-btn{flex:1;padding:8px;border:none;background:transparent;border-radius:8px;cursor:pointer;font-size:14px;color:#65676b;font-weight:600;display:flex;align-items:center;justify-content:center;gap:6px;transition:background .15s}
+.action-btn:hover{background:#f0f2f5}
+.action-btn.liked{color:#1877f2}
+
+/* 留言 */
+.comments-section{padding:0 16px 12px;border-top:1px solid #e4e6eb}
+.comment-list{display:flex;flex-direction:column;gap:6px;margin-bottom:10px;margin-top:10px}
+.comment-item{background:#f0f2f5;border-radius:16px;padding:8px 12px}
+.comment-name{font-weight:600;font-size:13px;color:#050505}
+.comment-text{font-size:13px;color:#333;margin-top:2px;line-height:1.4}
+.comment-form{display:flex;gap:8px}
+.comment-form input{flex:1;border:1px solid #ddd;border-radius:20px;padding:8px 14px;font-size:13px;font-family:inherit;outline:none}
+.comment-form input:focus{border-color:#1877f2}
+.comment-submit{background:#1877f2;color:#fff;border:none;border-radius:20px;padding:8px 16px;font-size:13px;cursor:pointer;font-weight:600}
+.comment-name-input{width:100px;border:1px solid #ddd;border-radius:20px;padding:8px 12px;font-size:13px;font-family:inherit;outline:none}
+.comment-name-input:focus{border-color:#1877f2}
+.toggle-comments{background:none;border:none;color:#65676b;font-size:13px;cursor:pointer;padding:0 0 8px;font-weight:600}
+.toggle-comments:hover{text-decoration:underline}
+
+/* 空狀態 */
+#empty{text-align:center;color:#65676b;padding:40px;font-size:15px}
+
+/* 載入 */
+#loading{text-align:center;color:#65676b;padding:20px}
+</style>
+</head>
+<body>
+<div id="navbar">
+  <h1>👨‍👩‍👧‍👦 王家一族</h1>
+  <div id="nav-tabs">
+    <div class="nav-tab active" onclick="setCategory('')">全部</div>
+    <div class="nav-tab" onclick="setCategory('出遊')">🗺 出遊</div>
+    <div class="nav-tab" onclick="setCategory('美食')">🍜 美食</div>
+    <div class="nav-tab" onclick="setCategory('生活資訊')">📢 生活資訊</div>
+  </div>
+</div>
+
+<div id="main">
+  <div id="post-box">
+    <h3>分享你的動態</h3>
+    <div class="post-form">
+      <input id="p-name" placeholder="你的暱稱" maxlength="20">
+      <select id="p-cat">
+        <option value="">選擇分類</option>
+        <option value="出遊">🗺 出遊</option>
+        <option value="美食">🍜 美食</option>
+        <option value="生活資訊">📢 生活資訊</option>
+      </select>
+      <textarea id="p-content" placeholder="你想分享什麼？" maxlength="500"></textarea>
+      <button class="submit-btn" onclick="submitPost()">發表</button>
+    </div>
+  </div>
+  <div id="loading">載入中...</div>
+  <div id="posts-container"></div>
+  <div id="empty" style="display:none">還沒有貼文，來發第一篇吧！</div>
+</div>
+
+<script>
+var currentCategory = '';
+var COLORS = ['#1877f2','#42b883','#e86c2c','#9b59b6','#e74c3c','#16a085'];
+
+function getColor(name){
+  var n = 0;
+  for(var i=0;i<name.length;i++) n += name.charCodeAt(i);
+  return COLORS[n % COLORS.length];
+}
+
+function timeAgo(ts){
+  var diff = Math.floor(Date.now()/1000) - ts;
+  if(diff < 60) return '剛剛';
+  if(diff < 3600) return Math.floor(diff/60) + ' 分鐘前';
+  if(diff < 86400) return Math.floor(diff/3600) + ' 小時前';
+  return Math.floor(diff/86400) + ' 天前';
+}
+
+function setCategory(cat){
+  currentCategory = cat;
+  document.querySelectorAll('.nav-tab').forEach(function(t){ t.className='nav-tab'; });
+  var idx = ['','出遊','美食','生活資訊'].indexOf(cat);
+  document.querySelectorAll('.nav-tab')[idx].className='nav-tab active';
+  loadPosts();
+}
+
+async function loadPosts(){
+  document.getElementById('loading').style.display='block';
+  document.getElementById('posts-container').innerHTML='';
+  try{
+    var res = await fetch('/api/posts' + (currentCategory ? '?category='+encodeURIComponent(currentCategory) : ''));
+    var posts = await res.json();
+    document.getElementById('loading').style.display='none';
+    if(posts.length===0){
+      document.getElementById('empty').style.display='block';
+    } else {
+      document.getElementById('empty').style.display='none';
+      posts.forEach(function(p){ renderPost(p); });
+    }
+  } catch(e){
+    document.getElementById('loading').textContent='載入失敗，請重新整理';
+  }
+}
+
+function renderPost(p){
+  var container = document.getElementById('posts-container');
+  var div = document.createElement('div');
+  div.className='post-card';
+  div.id='post-'+p.id;
+  var initials = p.name.slice(0,1).toUpperCase();
+  var color = getColor(p.name);
+  var commentsHtml = p.comments.map(function(c){
+    return '<div class="comment-item"><div class="comment-name">'+esc(c.name)+'</div><div class="comment-text">'+esc(c.content)+'</div></div>';
+  }).join('');
+  div.innerHTML =
+    '<div class="post-header">'+
+      '<div class="avatar" style="background:'+color+'">'+initials+'</div>'+
+      '<div class="post-meta">'+
+        '<div class="post-name">'+esc(p.name)+'</div>'+
+        '<div class="post-info">'+
+          '<span>'+timeAgo(p.time)+'</span>'+
+          '<span>·</span>'+
+          '<span class="cat-badge cat-'+p.category+'">'+p.category+'</span>'+
+        '</div>'+
+      '</div>'+
+    '</div>'+
+    '<div class="post-content">'+esc(p.content)+'</div>'+
+    '<div class="post-actions">'+
+      '<button class="action-btn" id="like-btn-'+p.id+'" onclick="likePost(\''+p.id+'\')">'+
+        '👍 讚 <span id="like-count-'+p.id+'">'+p.likes+'</span>'+
+      '</button>'+
+      '<button class="action-btn" onclick="toggleComments(\''+p.id+'\')">'+
+        '💬 留言 <span>'+p.comments.length+'</span>'+
+      '</button>'+
+    '</div>'+
+    '<div class="comments-section" id="comments-'+p.id+'" style="display:none">'+
+      '<div class="comment-list" id="comment-list-'+p.id+'">'+commentsHtml+'</div>'+
+      '<div class="comment-form">'+
+        '<input class="comment-name-input" id="cname-'+p.id+'" placeholder="暱稱">'+
+        '<input id="ctext-'+p.id+'" placeholder="留言...">'+
+        '<button class="comment-submit" onclick="submitComment(\''+p.id+'\')">送出</button>'+
+      '</div>'+
+    '</div>';
+  container.appendChild(div);
+}
+
+function esc(s){
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function toggleComments(id){
+  var el = document.getElementById('comments-'+id);
+  el.style.display = el.style.display==='none' ? 'block' : 'none';
+}
+
+async function likePost(id){
+  var btn = document.getElementById('like-btn-'+id);
+  btn.disabled = true;
+  try{
+    var res = await fetch('/api/posts/'+id+'/like', {method:'POST'});
+    var data = await res.json();
+    document.getElementById('like-count-'+id).textContent = data.likes;
+    btn.className='action-btn liked';
+  } catch(e){}
+}
+
+async function submitComment(postId){
+  var name = document.getElementById('cname-'+postId).value.trim();
+  var content = document.getElementById('ctext-'+postId).value.trim();
+  if(!name || !content){ alert('請填寫暱稱和留言'); return; }
+  try{
+    var res = await fetch('/api/posts/'+postId+'/comments', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({name:name, content:content})
+    });
+    var c = await res.json();
+    var list = document.getElementById('comment-list-'+postId);
+    var div = document.createElement('div');
+    div.className='comment-item';
+    div.innerHTML='<div class="comment-name">'+esc(c.name)+'</div><div class="comment-text">'+esc(c.content)+'</div>';
+    list.appendChild(div);
+    document.getElementById('ctext-'+postId).value='';
+  } catch(e){ alert('留言失敗'); }
+}
+
+async function submitPost(){
+  var name = document.getElementById('p-name').value.trim();
+  var cat = document.getElementById('p-cat').value;
+  var content = document.getElementById('p-content').value.trim();
+  if(!name || !cat || !content){ alert('請填寫暱稱、分類和內容'); return; }
+  try{
+    var res = await fetch('/api/posts', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({name:name, category:cat, content:content})
+    });
+    var post = await res.json();
+    document.getElementById('p-content').value='';
+    document.getElementById('empty').style.display='none';
+    var container = document.getElementById('posts-container');
+    var temp = document.createElement('div');
+    container.insertBefore(temp, container.firstChild);
+    var oldContainer = document.getElementById('posts-container');
+    var dummy = {posts:[]};
+    renderPost(post);
+    var newCard = container.lastChild;
+    container.insertBefore(newCard, container.firstChild);
+    temp.remove();
+  } catch(e){ alert('發文失敗'); }
+}
+
+loadPosts();
+setInterval(loadPosts, 30000);
+</script>
+</body>
+</html>
